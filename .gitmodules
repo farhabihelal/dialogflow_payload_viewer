@@ -1,0 +1,3 @@
+[submodule "src/dialogflow-api"]
+	path = src/dialogflow-api
+	url = https://github.com/haru-project/dialogflow-api.git
