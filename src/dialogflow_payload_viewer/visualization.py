@@ -2,10 +2,15 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(f"{os.path.dirname(__file__)}/../dialogflow-api/src/"))
+sys.path.append(
+    os.path.abspath(f"{os.path.dirname(__file__)}/../dialogflow_payload_utils")
+)
 
-from datetime import datetime
+from dialogflow_payload_gen.csv_parser_xl import CSVParserXL
 
 from dialogflow import Dialogflow
+
+import urllib
 
 import graphviz
 
@@ -15,6 +20,8 @@ class Visualizer:
 
         self.configure(config)
 
+        self._parser = CSVParserXL(self.config)
+        self._parser.load(filepath=self.config["parse_filepath"])
         self._api = Dialogflow(self.config)
 
         self._graphs = []
@@ -24,63 +31,10 @@ class Visualizer:
     def configure(self, config: dict):
         self.config = config
 
-    # def create(self):
-
-    #     for key in self._intents:
-    #         intent = self._intents[key]._intent_obj
-
-    #         if not intent.parent_followup_intent_name:
-    #             self._graph.edge('Root', intent.display_name)
-    #         else:
-    #             parent = self._intents[intent.parent_followup_intent_name]._intent_obj
-    #             self._graph.edge(parent.display_name, intent.display_name)
-
-    # def create(self):
-
-    #     for branch in self._branches:
-
-    #         graph = graphviz.Digraph(
-    #             f"{branch._intent_obj.display_name}",
-    #             node_attr={"color": "lightblue2", "style": "filled"},
-    #             format="png",
-    #             engine="dot",
-    #             formatter="cairo",
-    #             renderer="cairo",
-    #         )
-
-    #         def create_edge(node):
-    #             intent = node._intent_obj
-
-    #             graph.node(intent.display_name, **self._get_node_attrs(node))
-
-    #             if intent.action:
-    #                 action = self._intents_display.get(intent.action, None)
-    #                 if action:
-    #                     graph.edge(
-    #                         intent.display_name,
-    #                         action._intent_obj.display_name,
-    #                         color="red",
-    #                         style="dotted",
-    #                     )
-
-    #             if node._parent:
-    #                 parent = node._parent._intent_obj
-    #                 # graph.node(f'name: {intent.name}', label=intent.display_name, style='filled', fillcolor='lightblue2')
-    #                 graph.edge(parent.display_name, intent.display_name)
-    #             else:
-    #                 graph.edge("Root", intent.display_name)
-
-    #             for child in node._children:
-    #                 create_edge(child)
-
-    #         create_edge(branch)
-
-    #         graph.view()
-    #         self._graphs.append(graph)
-
     def create(self):
         """ """
         self._api.get_intents()
+        self._api.generate_tree()
 
         self.create_record()
 
@@ -88,10 +42,20 @@ class Visualizer:
         """ """
         root_intents = self._api.get_root_intents()
 
-        for intent in self.root_intents:
+        for root_intent in root_intents:
+
+            if root_intent.display_name not in [
+                "topic-hometown",
+                "topic-travel-homecountry",
+            ]:
+                continue
 
             graph = graphviz.Digraph(
-                f"{intent.display_name}",
+                name=f"{root_intent.display_name}",
+                directory=f"{self.config['render_path']}",
+                # filename="",
+                edge_attr={},
+                graph_attr={},
                 node_attr={
                     "shape": "plaintext",
                 },
@@ -104,46 +68,80 @@ class Visualizer:
             # graph.node('Root', style='filled')
 
             def create_edge(node):
-                intent = node._intent_obj
+                intent = node.intent_obj
 
                 # graph.node(intent.display_name, **self._get_node_attrs(node))
                 self.create_record_node(graph, node)
 
                 if intent.action:
-                    action = self._intents_display.get(intent.action, None)
+                    action = self._api.intents["display_name"].get(intent.action, None)
                     if action:
                         # graph.edge(intent.display_name, action._intent_obj.display_name, color='red', style='dotted')
                         graph.edge(
                             f"{intent.display_name}:action",
-                            f"{action._intent_obj.display_name}",
+                            f"{action.display_name}",
                             color="red",
                             style="dotted",
                         )
 
-                if node._parent:
-                    parent = node._parent._intent_obj
+                if node.parent:
+                    parent = node.parent.intent_obj
                     # graph.node(f'name: {intent.name}', label=intent.display_name, style='filled', fillcolor='lightblue2')
                     graph.edge(f"{parent.display_name}", f"{intent.display_name}")
                 else:
                     # graph.edge('Root', f'{intent.display_name}')
                     pass
 
-                for child in node._children:
+                for child in node.children:
                     create_edge(child)
 
-            create_edge(intent)
+            create_edge(root_intent)
 
             graph.render(
-                filename=f"{intent.display_name}.gv",
-                directory=self.config["render_dir"],
+                # filename=f"{intent.display_name}.gv",
+                directory=self.config["render_path"],
                 view=False,
-                format="pdf",
-                renderer="cairo",
-                engine="dot",
-                formatter="cairo",
-                outfile=f"{intent.display_name}.pdf",
+                # format="pdf",
+                # renderer="cairo",
+                # engine="dot",
+                # formatter="cairo",
+                outfile=f"{root_intent.display_name}.pdf",
             )
             self._graphs.append(graph)
+
+    def get_url(self, node):
+        intent_name = node.display_name
+        sheet_data = self.config["sheet_data"]
+
+        url = ""
+
+        def get_sheet_name(name: str):
+            return name.replace("topic", "").replace("-", " ").strip().title()
+
+        def get_response_indices(intents: list, intent_name: str) -> tuple:
+            intent_rows = [
+                x
+                for x in intents
+                if x[self._parser._header_map["intent"]] == intent_name
+            ]
+            start_idx = intents.index(next(iter(intent_rows)))
+            end_idx = start_idx + len(intent_rows) - 1
+
+            return start_idx, end_idx
+
+        try:
+            sheet_name = get_sheet_name(node.root.display_name)
+            gid = sheet_data["gid_mapping"].get(sheet_name, "")
+            intents = self._parser._data_sheets[sheet_name]
+            start_idx, end_idx = get_response_indices(intents, intent_name)
+
+            # url = f"{sheet_data['base_url']}gid={gid}&range={sheet_data['range_column']['start']}{start_idx}:{sheet_data['range_column']['end']}{end_idx}"
+            url = f"{sheet_data['base_url']}gid={gid}&amp;range={sheet_data['range_column']['start']}{start_idx}:{sheet_data['range_column']['end']}{end_idx}"
+        except Exception as e:
+            pass
+
+        # return urllib.parse.quote(url)
+        return url
 
     def create_record_node(self, graph, node):
 
@@ -151,40 +149,17 @@ class Visualizer:
 
         node_color = "lightblue"
 
-        if node._intent_obj.is_fallback:
+        if node.intent_obj.is_fallback:
             node_color = "pink"
+
+        url = self.get_url(node)
 
         record_def += f"""
         <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10" >
         <TR>
-            <TD PORT="intent_name" COLSPAN="2" BGCOLOR="{node_color}" CELLPADDING="30"><FONT POINT-SIZE="32.0" FACE=""><b>{node.display_name}</b></FONT></TD>
+            <TD PORT="intent_name" COLSPAN="2" BGCOLOR="{node_color}" CELLPADDING="30" HREF="{url}"><FONT POINT-SIZE="32.0" FACE=""><b>{node.display_name}</b></FONT></TD>
         </TR>
         """
-
-        # if len(node.training_phrases) > 0:
-
-        #     color = "0.25, 1.0, 0.7"
-
-        #     if len(node.training_phrases) < 2:
-        #         color = "0.0, 1.0, 0.7"
-        #     elif len(node.training_phrases) < 7:
-        #         color = "0.1, 1.0, 0.7"
-
-        #     record_def += f"""
-        # <TR>
-        #     <TD ALIGN="CENTER"><IMG SRC="{self._icons_dir}/ml-001-64x64.png"/></TD>
-        #     <TD BGCOLOR="{color}"><FONT POINT-SIZE="20.0"><b>{len(node.training_phrases)}</b></FONT> phrases</TD>
-        # </TR>
-        # """
-
-        #     for i, phrase in enumerate(node.training_phrases):
-        #         if i > 2:
-        #             break
-        #         record_def += f"""
-        # <TR>
-        #     <TD COLSPAN="2"><i>{phrase}</i></TD>
-        # </TR>
-        # """
 
         if node.intent_obj.action:
             record_def += f"""
@@ -209,20 +184,18 @@ class Visualizer:
         # </TR>
         # """
 
-        if node.has_messages:
-            record_def += f"""
-        <TR>
-            <TD PORT="responses" COLSPAN="2" ALIGN="CENTER"><IMG SRC="{self.config["icons_path"]}/response-001-64x64.png"/></TD>
-        </TR>
-        """
+        if node.has_text_messages:
+            # record_def += f"""
+            # <TR>
+            #     <TD PORT="responses" COLSPAN="2" ALIGN="CENTER"><IMG SRC="{self.config["icons_path"]}/response-001-64x64.png"/></TD>
+            # </TR>
+            # """
 
-            for message_list in node.messages:
-                for i, message in enumerate(message_list):
-                    # if i > 0:
-                    #     break
+            for i, responses in enumerate(node.text_messages):
+                for j, paraphrase in enumerate(responses):
                     record_def += f"""
         <TR>
-            <TD COLSPAN="2"><i>{message}</i></TD>
+            <TD COLSPAN="2"><i>{paraphrase}</i></TD>
         </TR>
         """
 
@@ -230,7 +203,7 @@ class Visualizer:
         </TABLE>
         """
 
-        graph.node(node.intent_obj.display_name, f"<{record_def}>")
+        graph.node(node.display_name, f"<{record_def}>")
 
     def _get_node_attrs(self, node):
         result = {
@@ -238,11 +211,6 @@ class Visualizer:
             "fillcolor": "0.25, 1.0, 0.7",
             "style": "filled",
         }
-
-        # if len(node.traning_phrases) < 2:
-        #     result["fillcolor"] = "0.0, 1.0, 0.7"
-        # elif len(node.traning_phrases) < 7:
-        #     result["fillcolor"] = "0.1, 1.0, 0.7"
 
         return result
 
@@ -252,11 +220,31 @@ class Visualizer:
 
 
 if __name__ == "__main__":
+
+    sheet_data = {
+        "base_url": "https://docs.google.com/spreadsheets/d/1o022NBUApUV-mjQHImqDJvS3DovTv-kGIhIm04sqdDM/edit#",
+        "parameters": ["gid", "range"],
+        "gid_mapping": {
+            "Hometown": "1878121241",
+            "Travel Homecountry": "1388186892",
+        },
+        "range_column": {
+            "start": "F",
+            "end": "K",
+        },
+    }
+
+    base_dir = os.path.abspath(f"{os.path.dirname(__file__)}/../../")
+    agent_dir = os.path.join(base_dir, ".temp/keys")
+    data_dir = os.path.join(base_dir, "data")
+
     config = {
-        "project_id": "",
-        "credential": "",
-        "icons_path": "",
-        "render_dir": "",
+        "project_id": "api-test-v99y",
+        "credential": f"{agent_dir}/api-test.json",
+        "icons_path": f"{base_dir}/icons",
+        "render_path": f"{base_dir}/renders",
+        "sheet_data": sheet_data,
+        "parse_filepath": f"{data_dir}/haru-test.xlsx",
     }
 
     viz = Visualizer(config)
