@@ -116,7 +116,7 @@ class Visualizer:
         url = ""
 
         def get_sheet_name(name: str):
-            return name.replace("topic", "").replace("-", " ").strip().title()
+            return name.replace("topic-", "").replace(" ", "-").strip().lower()
 
         def get_response_indices(intents: list, intent_name: str) -> tuple:
             intent_rows = [
@@ -124,7 +124,7 @@ class Visualizer:
                 for x in intents
                 if x[self._parser._header_map["intent"]] == intent_name
             ]
-            start_idx = intents.index(next(iter(intent_rows)))
+            start_idx = intents.index(next(iter(intent_rows))) + 2
             end_idx = start_idx + len(intent_rows) - 1
 
             return start_idx, end_idx
@@ -157,7 +157,7 @@ class Visualizer:
         record_def += f"""
         <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10" >
         <TR>
-            <TD PORT="intent_name" COLSPAN="2" BGCOLOR="{node_color}" CELLPADDING="30" HREF="{url}"><FONT POINT-SIZE="32.0" FACE=""><b>{node.display_name}</b></FONT></TD>
+            <TD PORT="intent_name" COLSPAN="2" BGCOLOR="{node_color}" CELLPADDING="30" HREF="{url}"><FONT POINT-SIZE="20.0" FACE=""><b>{node.display_name}</b></FONT></TD>
         </TR>
         """
 
@@ -195,7 +195,7 @@ class Visualizer:
                 for j, paraphrase in enumerate(responses):
                     record_def += f"""
         <TR>
-            <TD COLSPAN="2"><i>{paraphrase}</i></TD>
+            <TD COLSPAN="2" CELLPADDING="10"><FONT POINT-SIZE="18.0" FACE=""><i>{paraphrase}</i></FONT></TD>
         </TR>
         """
 
@@ -222,15 +222,31 @@ class Visualizer:
 if __name__ == "__main__":
 
     sheet_data = {
-        "base_url": "https://docs.google.com/spreadsheets/d/1o022NBUApUV-mjQHImqDJvS3DovTv-kGIhIm04sqdDM/edit#",
+        # Tier of friendship
+        # "base_url": "https://docs.google.com/spreadsheets/d/1o022NBUApUV-mjQHImqDJvS3DovTv-kGIhIm04sqdDM/edit#",
+        # Test
+        "base_url": "https://docs.google.com/spreadsheets/d/1HyKBY7ta-rQ8NsJMgg5fLk168cBnOuHC/edit#",
         "parameters": ["gid", "range"],
         "gid_mapping": {
-            "Hometown": "1878121241",
-            "Travel Homecountry": "1388186892",
+            "day-1-session-1": "1931116267",
+            "day-1-session-2": "1357288694",
         },
         "range_column": {
-            "start": "F",
+            "start": "B",
             "end": "K",
+        },
+    }
+
+    style_data = {
+        "title": {
+            "color": "",
+            "font-size": "",
+            "font": "",
+        },
+        "body": {
+            "color": "",
+            "font-size": "",
+            "font": "",
         },
     }
 
@@ -244,7 +260,7 @@ if __name__ == "__main__":
         "icons_path": f"{base_dir}/icons",
         "render_path": f"{base_dir}/renders",
         "sheet_data": sheet_data,
-        "parse_filepath": f"{data_dir}/haru-test.xlsx",
+        "parse_filepath": f"{data_dir}/day-1.xlsx",
     }
 
     viz = Visualizer(config)
