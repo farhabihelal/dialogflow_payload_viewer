@@ -10,8 +10,8 @@ from dialogflow_payload_gen.csv_parser_xl import CSVParserXL
 
 from dialogflow import Dialogflow
 
-import urllib
 
+from datetime import datetime
 import graphviz
 
 
@@ -41,18 +41,19 @@ class Visualizer:
     def create_record(self):
         """ """
         root_intents = self._api.get_root_intents()
+        exportable_intents = self.get_exportable_root_intents()
 
         for root_intent in root_intents:
 
-            if root_intent.display_name not in [
-                "topic-hometown",
-                "topic-travel-homecountry",
-            ]:
+            if root_intent.display_name not in exportable_intents:
                 continue
 
             graph = graphviz.Digraph(
                 name=f"{root_intent.display_name}",
-                directory=f"{self.config['render_path']}",
+                directory=os.path.join(
+                    os.path.abspath(self.config["render_path"]),
+                    datetime.now().strftime("%Y-%m-%d-%H:%M"),
+                ),
                 # filename="",
                 edge_attr={},
                 graph_attr={},
@@ -65,31 +66,36 @@ class Visualizer:
                 renderer="cairo",
             )
 
-            # graph.node('Root', style='filled')
-
             def create_edge(node):
                 intent = node.intent_obj
 
-                # graph.node(intent.display_name, **self._get_node_attrs(node))
                 self.create_record_node(graph, node)
 
                 if intent.action:
                     action = self._api.intents["display_name"].get(intent.action, None)
                     if action:
-                        # graph.edge(intent.display_name, action._intent_obj.display_name, color='red', style='dotted')
+                        edge_style = self.config["style_data"]["edge"]["indirect"]
                         graph.edge(
-                            f"{intent.display_name}:action",
+                            f"{intent.display_name}",
                             f"{action.display_name}",
-                            color="red",
-                            style="dotted",
+                            color=edge_style["color"],
+                            style=edge_style["style"],
+                            arrowsize=edge_style["arrowsize"],
+                            penwidth=edge_style["penwidth"],
                         )
 
                 if node.parent:
                     parent = node.parent.intent_obj
-                    # graph.node(f'name: {intent.name}', label=intent.display_name, style='filled', fillcolor='lightblue2')
-                    graph.edge(f"{parent.display_name}", f"{intent.display_name}")
+                    edge_style = self.config["style_data"]["edge"]["direct"]
+                    graph.edge(
+                        f"{parent.display_name}",
+                        f"{intent.display_name}",
+                        color=edge_style["color"],
+                        style=edge_style["style"],
+                        arrowsize=edge_style["arrowsize"],
+                        penwidth=edge_style["penwidth"],
+                    )
                 else:
-                    # graph.edge('Root', f'{intent.display_name}')
                     pass
 
                 for child in node.children:
@@ -99,15 +105,29 @@ class Visualizer:
 
             graph.render(
                 # filename=f"{intent.display_name}.gv",
-                directory=self.config["render_path"],
+                # directory=f"{os.path.abspath(self.config['render_path'])}/{datetime.now().strftime('%Y-%m-%d-%H:%M')}",
                 view=False,
                 # format="pdf",
                 # renderer="cairo",
                 # engine="dot",
                 # formatter="cairo",
-                outfile=f"{root_intent.display_name}.pdf",
+                # outfile=os.path.join(
+                #     f"{os.path.abspath(self.config['render_path'])}/{datetime.now().strftime('%Y-%m-%d-%H:%M')}",
+                #     f"{root_intent.display_name}.pdf",
+                # ),
             )
             self._graphs.append(graph)
+
+    def get_exportable_root_intents(self) -> list:
+        exportable_intentes = []
+
+        gid_mapping = self.config["sheet_data"]["gid_mapping"]
+        for day in gid_mapping:
+            for session in gid_mapping[day]:
+                intents = gid_mapping[day][session]["intents"]
+                exportable_intentes.extend(intents)
+
+        return exportable_intentes
 
     def get_url(self, node):
         intent_name = node.display_name
@@ -115,8 +135,26 @@ class Visualizer:
 
         url = ""
 
-        def get_sheet_name(name: str):
-            return name.replace("topic-", "").replace(" ", "-").strip().lower()
+        def get_sheet_mapping(name: str) -> tuple:
+            """ """
+
+            def get_sheet_name(day: str, session: str) -> str:
+                return f"day-{day}-session-{session}"
+
+            gid = ""
+            sheet_name = ""
+
+            # name = name.replace("topic-", "").replace(" ", "-").strip().lower()
+            gid_mapping = self.config["sheet_data"]["gid_mapping"]
+            for day in gid_mapping:
+                for session in gid_mapping[day]:
+                    intents = gid_mapping[day][session]["intents"]
+                    if name in intents:
+                        gid = gid_mapping[day][session]["gid"]
+                        sheet_name = get_sheet_name(day, session)
+                        return sheet_name, gid
+
+            return sheet_name, gid
 
         def get_response_indices(intents: list, intent_name: str) -> tuple:
             intent_rows = [
@@ -130,72 +168,51 @@ class Visualizer:
             return start_idx, end_idx
 
         try:
-            sheet_name = get_sheet_name(node.root.display_name)
-            gid = sheet_data["gid_mapping"].get(sheet_name, "")
+            sheet_name, gid = get_sheet_mapping(node.root.display_name)
             intents = self._parser._data_sheets[sheet_name]
             start_idx, end_idx = get_response_indices(intents, intent_name)
 
-            # url = f"{sheet_data['base_url']}gid={gid}&range={sheet_data['range_column']['start']}{start_idx}:{sheet_data['range_column']['end']}{end_idx}"
             url = f"{sheet_data['base_url']}gid={gid}&amp;range={sheet_data['range_column']['start']}{start_idx}:{sheet_data['range_column']['end']}{end_idx}"
+
         except Exception as e:
             pass
 
-        # return urllib.parse.quote(url)
         return url
 
     def create_record_node(self, graph, node):
 
         record_def = ""
 
-        node_color = "lightblue"
-
-        if node.intent_obj.is_fallback:
-            node_color = "pink"
+        style_data = (
+            self.config["style_data"]["fallback"]
+            if node.intent_obj.is_fallback
+            else self.config["style_data"]["default"]
+        )
 
         url = self.get_url(node)
 
         record_def += f"""
-        <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10" >
+        <TABLE BGCOLOR="black" BORDER="4" CELLBORDER="0" CELLSPACING="0" CELLPADDING="20" STYLE="ROUNDED">
         <TR>
-            <TD PORT="intent_name" COLSPAN="2" BGCOLOR="{node_color}" CELLPADDING="30" HREF="{url}"><FONT POINT-SIZE="20.0" FACE=""><b>{node.display_name}</b></FONT></TD>
+            <TD PORT="intent_name" COLSPAN="2" STYLE="ROUNDED" BGCOLOR="{style_data['intent-name']['color']}" CELLPADDING="30" HREF="{url}"><FONT POINT-SIZE="{style_data['intent-name']['font-size']}" FACE="{style_data['intent-name']['font']}"><b>{node.display_name}</b></FONT></TD>
         </TR>
         """
 
-        if node.intent_obj.action:
-            record_def += f"""
-        <TR>
-            <TD ALIGN="CENTER"><IMG SRC="{self.config["icons_path"]}/action-004-64x64.png"/></TD>
-            <TD PORT="action" ALIGN="CENTER">{node.intent_obj.action}</TD>
-        </TR>
-        """
-
-        # if len(node._intent_obj.parameters) > 0:
+        # if node.intent_obj.action:
         #     record_def += f"""
         # <TR>
-        #     <TD PORT="parameters" COLSPAN="2" ALIGN="CENTER"><IMG SRC="{self._icons_dir}/parameter-002-64x64.png"/></TD>
-        # </TR>
-        # """
-
-        # for parameter in node._intent_obj.parameters:
-        #     record_def += f"""
-        # <TR>
-        #     <TD>{parameter.display_name}</TD>
-        #     <TD>{parameter.entity_type_display_name}</TD>
+        #     <TD BGCOLOR="{style_data['action']['color']}" ALIGN="CENTER" STYLE="ROUNDED"><IMG SRC="{self.config["icons_path"]}/action-004-64x64.png"/></TD>
+        #     <TD PORT="action" BGCOLOR="{style_data['action']['color']}" ALIGN="CENTER" STYLE="ROUNDED"><FONT POINT-SIZE="{style_data['action']['font-size']}" FACE="{style_data['action']['font']}">{node.intent_obj.action}</FONT></TD>
         # </TR>
         # """
 
         if node.has_text_messages:
-            # record_def += f"""
-            # <TR>
-            #     <TD PORT="responses" COLSPAN="2" ALIGN="CENTER"><IMG SRC="{self.config["icons_path"]}/response-001-64x64.png"/></TD>
-            # </TR>
-            # """
 
             for i, responses in enumerate(node.text_messages):
                 for j, paraphrase in enumerate(responses):
                     record_def += f"""
         <TR>
-            <TD COLSPAN="2" CELLPADDING="10"><FONT POINT-SIZE="18.0" FACE=""><i>{paraphrase}</i></FONT></TD>
+            <TD COLSPAN="2" BGCOLOR="{style_data['messages']['color']}" CELLPADDING="20" STYLE="ROUNDED"><FONT POINT-SIZE="{style_data['messages']['font-size']}" FACE="{style_data['messages']['font']}"><i>{paraphrase}</i></FONT></TD>
         </TR>
         """
 
@@ -204,15 +221,6 @@ class Visualizer:
         """
 
         graph.node(node.display_name, f"<{record_def}>")
-
-    def _get_node_attrs(self, node):
-        result = {
-            "color": "",
-            "fillcolor": "0.25, 1.0, 0.7",
-            "style": "filled",
-        }
-
-        return result
 
     def view(self):
         for graph in self._graphs:
@@ -225,11 +233,30 @@ if __name__ == "__main__":
         # Tier of friendship
         # "base_url": "https://docs.google.com/spreadsheets/d/1o022NBUApUV-mjQHImqDJvS3DovTv-kGIhIm04sqdDM/edit#",
         # Test
-        "base_url": "https://docs.google.com/spreadsheets/d/1HyKBY7ta-rQ8NsJMgg5fLk168cBnOuHC/edit#",
+        "base_url": "https://docs.google.com/spreadsheets/d/1kMeUTg8ewt-mtUago2ld7hG92vm1GBdT/edit#",
         "parameters": ["gid", "range"],
         "gid_mapping": {
-            "day-1-session-1": "1931116267",
-            "day-1-session-2": "1357288694",
+            "1": {
+                "1": {
+                    "gid": "711848807",
+                    "intents": [
+                        "topic-intro",
+                        "topic-day-one-session-one-names-origins",
+                        "topic-day-one-session-one-transition-age",
+                        "topic-day-one-session-one-age",
+                    ],
+                },
+                "2": {
+                    "gid": "1734499821",
+                    "intents": [
+                        "topic-day-one-session-two-intro",
+                        "topic-travel-homecountry",
+                        "topic-day-one-session-two-transition",
+                        "topic-hometown",
+                        "topic-day-one-session-two-outro",
+                    ],
+                },
+            },
         },
         "range_column": {
             "start": "B",
@@ -238,16 +265,88 @@ if __name__ == "__main__":
     }
 
     style_data = {
-        "title": {
-            "color": "",
-            "font-size": "",
-            "font": "",
+        "default": {
+            "intent-name": {
+                "color": "darkcyan",
+                "font-size": "20",
+                "font": "Calibri",
+            },
+            "action": {
+                "color": "darkseagreen4",
+                "font-size": "16",
+                "font": "Calibri",
+            },
+            "messages": {
+                "color": "burlywood1",
+                "font-size": "18",
+                "font": "Calibri",
+            },
         },
-        "body": {
-            "color": "",
-            "font-size": "",
-            "font": "",
+        "fallback": {
+            "intent-name": {
+                "color": "coral",
+                "font-size": "20",
+                "font": "Calibri",
+            },
+            "action": {
+                "color": "darkseagreen4",
+                "font-size": "16",
+                "font": "Calibri",
+            },
+            "messages": {
+                "color": "burlywood1",
+                "font-size": "18",
+                "font": "Calibri",
+            },
         },
+        "edge": {
+            "direct": {
+                "color": "black",
+                "arrowsize": "2.0",
+                "penwidth": "3.0",
+                "style": "",
+            },
+            "indirect": {
+                "color": "firebrick2",
+                "arrowsize": "2.0",
+                "penwidth": "3.0",
+                "style": "",
+            },
+        }
+        # "question": {
+        #     "intent-name": {
+        #         "color": "darkturquoise",
+        #         "font-size": "20",
+        #         "font": "Calibri",
+        #     },
+        #     "action": {
+        #         "color": "darkturquoise",
+        #         "font-size": "20",
+        #         "font": "Calibri",
+        #     },
+        #     "messages": {
+        #         "color": "darkturquoise",
+        #         "font-size": "20",
+        #         "font": "Calibri",
+        #     },
+        # },
+        # "answer": {
+        #     "intent-name": {
+        #         "color": "darkturquoise",
+        #         "font-size": "20",
+        #         "font": "Calibri",
+        #     },
+        #     "action": {
+        #         "color": "darkturquoise",
+        #         "font-size": "20",
+        #         "font": "Calibri",
+        #     },
+        #     "messages": {
+        #         "color": "darkturquoise",
+        #         "font-size": "20",
+        #         "font": "Calibri",
+        #     },
+        # },
     }
 
     base_dir = os.path.abspath(f"{os.path.dirname(__file__)}/../../")
@@ -255,13 +354,14 @@ if __name__ == "__main__":
     data_dir = os.path.join(base_dir, "data")
 
     config = {
-        "project_id": "api-test-v99y",
-        "credential": f"{agent_dir}/api-test.json",
+        "project_id": "empathetic-stimulator-owp9",
+        "credential": f"{agent_dir}/es.json",
         "icons_path": f"{base_dir}/icons",
         "render_path": f"{base_dir}/renders",
         "sheet_data": sheet_data,
-        "parse_filepath": f"{data_dir}/day-1.xlsx",
+        "parse_filepath": f"{data_dir}/ES-Day-1.xlsx",
+        "style_data": style_data,
     }
 
     viz = Visualizer(config)
-    viz.view()
+    # viz.view()
