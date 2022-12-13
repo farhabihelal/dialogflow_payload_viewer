@@ -209,6 +209,12 @@ class Visualizer:
         if node.has_text_messages:
 
             for i, responses in enumerate(node.text_messages):
+                if i > 0:
+                    record_def += f"""
+        <TR>
+            <TD COLSPAN="2" BGCOLOR="black" CELLPADDING="5" STYLE="ROUNDED"></TD>
+        </TR>
+        """
                 for j, paraphrase in enumerate(responses):
                     record_def += f"""
         <TR>
@@ -254,6 +260,28 @@ if __name__ == "__main__":
                         "topic-day-one-session-two-transition",
                         "topic-hometown",
                         "topic-day-one-session-two-outro",
+                    ],
+                },
+            },
+            "2": {
+                "1": {
+                    "gid": "",
+                    "intents": [
+                        "topic-day-two-session-one-intro",
+                        "topic-day-two-family",
+                        "topic-day-two-session-one-transition",
+                        "topic-day-two-parents",
+                        "topic-day-two-session-one-outro",
+                    ],
+                },
+                "2": {
+                    "gid": "",
+                    "intents": [
+                        "topic-day-two-session-two-intro",
+                        "topic-pet-new",
+                        "topic-day-two-session-two-transition",
+                        "topic-lemurs",
+                        "topic-day-two-session-two-end",
                     ],
                 },
             },
