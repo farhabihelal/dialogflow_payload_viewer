@@ -50,11 +50,8 @@ class Visualizer:
 
             graph = graphviz.Digraph(
                 name=f"{root_intent.display_name}",
-                directory=os.path.join(
-                    os.path.abspath(self.config["render_path"]),
-                    datetime.now().strftime("%Y-%m-%d-%H:%M"),
-                ),
-                # filename="",
+                directory=self.get_render_path(root_intent.display_name),
+                filename=f"{root_intent.display_name}.gv",
                 edge_attr={},
                 graph_attr={},
                 node_attr={
@@ -111,12 +108,31 @@ class Visualizer:
                 # renderer="cairo",
                 # engine="dot",
                 # formatter="cairo",
-                # outfile=os.path.join(
-                #     f"{os.path.abspath(self.config['render_path'])}/{datetime.now().strftime('%Y-%m-%d-%H:%M')}",
-                #     f"{root_intent.display_name}.pdf",
-                # ),
+                outfile=os.path.join(
+                    self.get_render_path(root_intent.display_name),
+                    f"{root_intent.display_name}.pdf",
+                ),
             )
             self._graphs.append(graph)
+
+    def get_render_path(self, intent_name: str):
+        gid_mapping = self.config["sheet_data"]["gid_mapping"]
+
+        path = os.path.abspath(self.config["render_path"])
+
+        for day in gid_mapping:
+            for session in gid_mapping[day]:
+                intents = gid_mapping[day][session]["intents"]
+                if intent_name in intents:
+                    path = os.path.join(
+                        os.path.abspath(self.config["render_path"]),
+                        datetime.now().strftime("%Y-%m-%d-%H:%M"),
+                        f"day-{day}".title(),
+                        f"session-{session}".title(),
+                    )
+                    os.makedirs(path, exist_ok=True)
+                    return path
+        return path
 
     def get_exportable_root_intents(self) -> list:
         exportable_intentes = []
@@ -239,12 +255,12 @@ if __name__ == "__main__":
         # Tier of friendship
         # "base_url": "https://docs.google.com/spreadsheets/d/1o022NBUApUV-mjQHImqDJvS3DovTv-kGIhIm04sqdDM/edit#",
         # Test
-        "base_url": "https://docs.google.com/spreadsheets/d/1kMeUTg8ewt-mtUago2ld7hG92vm1GBdT/edit#",
+        "base_url": "https://docs.google.com/spreadsheets/d/16jQ8q7M72dBdkxpcIKPXT1nRQbmD4wibZIQRgN_84X8/edit#",
         "parameters": ["gid", "range"],
         "gid_mapping": {
             "1": {
                 "1": {
-                    "gid": "711848807",
+                    "gid": "1163585192",
                     "intents": [
                         "topic-intro",
                         "topic-day-one-session-one-names-origins",
@@ -253,7 +269,7 @@ if __name__ == "__main__":
                     ],
                 },
                 "2": {
-                    "gid": "1734499821",
+                    "gid": "919985165",
                     "intents": [
                         "topic-day-one-session-two-intro",
                         "topic-travel-homecountry",
@@ -263,28 +279,28 @@ if __name__ == "__main__":
                     ],
                 },
             },
-            "2": {
-                "1": {
-                    "gid": "",
-                    "intents": [
-                        "topic-day-two-session-one-intro",
-                        "topic-day-two-family",
-                        "topic-day-two-session-one-transition",
-                        "topic-day-two-parents",
-                        "topic-day-two-session-one-outro",
-                    ],
-                },
-                "2": {
-                    "gid": "",
-                    "intents": [
-                        "topic-day-two-session-two-intro",
-                        "topic-pet-new",
-                        "topic-day-two-session-two-transition",
-                        "topic-lemurs",
-                        "topic-day-two-session-two-end",
-                    ],
-                },
-            },
+            # "2": {
+            #     "1": {
+            #         "gid": "",
+            #         "intents": [
+            #             "topic-day-two-session-one-intro",
+            #             "topic-day-two-family",
+            #             "topic-day-two-session-one-transition",
+            #             "topic-day-two-parents",
+            #             "topic-day-two-session-one-outro",
+            #         ],
+            #     },
+            #     "2": {
+            #         "gid": "",
+            #         "intents": [
+            #             "topic-day-two-session-two-intro",
+            #             "topic-pet-new",
+            #             "topic-day-two-session-two-transition",
+            #             "topic-lemurs",
+            #             "topic-day-two-session-two-end",
+            #         ],
+            #     },
+            # },
         },
         "range_column": {
             "start": "B",
