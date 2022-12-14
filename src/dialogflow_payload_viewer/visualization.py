@@ -252,7 +252,10 @@ class Visualizer:
 if __name__ == "__main__":
 
     sheet_data = {
-        "base_url": "https://docs.google.com/spreadsheets/d/16jQ8q7M72dBdkxpcIKPXT1nRQbmD4wibZIQRgN_84X8/edit#",
+        # Actual
+        # "base_url": "https://docs.google.com/spreadsheets/d/16jQ8q7M72dBdkxpcIKPXT1nRQbmD4wibZIQRgN_84X8/edit#",
+        # Test
+        "base_url": "https://docs.google.com/spreadsheets/d/1kMeUTg8ewt-mtUago2ld7hG92vm1GBdT/edit#",
         "parameters": ["gid", "range"],
         "gid_mapping": {
             "1": {
@@ -278,7 +281,7 @@ if __name__ == "__main__":
             },
             "2": {
                 "1": {
-                    "gid": "",
+                    "gid": "1291907260",
                     "intents": [
                         "topic-day-two-session-one-intro",
                         "topic-day-two-family",
@@ -288,7 +291,7 @@ if __name__ == "__main__":
                     ],
                 },
                 "2": {
-                    "gid": "",
+                    "gid": "1576885209",
                     "intents": [
                         "topic-day-two-session-two-intro",
                         "topic-pet-new",
