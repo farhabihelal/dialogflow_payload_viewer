@@ -252,9 +252,6 @@ class Visualizer:
 if __name__ == "__main__":
 
     sheet_data = {
-        # Tier of friendship
-        # "base_url": "https://docs.google.com/spreadsheets/d/1o022NBUApUV-mjQHImqDJvS3DovTv-kGIhIm04sqdDM/edit#",
-        # Test
         "base_url": "https://docs.google.com/spreadsheets/d/16jQ8q7M72dBdkxpcIKPXT1nRQbmD4wibZIQRgN_84X8/edit#",
         "parameters": ["gid", "range"],
         "gid_mapping": {
@@ -279,28 +276,28 @@ if __name__ == "__main__":
                     ],
                 },
             },
-            # "2": {
-            #     "1": {
-            #         "gid": "",
-            #         "intents": [
-            #             "topic-day-two-session-one-intro",
-            #             "topic-day-two-family",
-            #             "topic-day-two-session-one-transition",
-            #             "topic-day-two-parents",
-            #             "topic-day-two-session-one-outro",
-            #         ],
-            #     },
-            #     "2": {
-            #         "gid": "",
-            #         "intents": [
-            #             "topic-day-two-session-two-intro",
-            #             "topic-pet-new",
-            #             "topic-day-two-session-two-transition",
-            #             "topic-lemurs",
-            #             "topic-day-two-session-two-end",
-            #         ],
-            #     },
-            # },
+            "2": {
+                "1": {
+                    "gid": "",
+                    "intents": [
+                        "topic-day-two-session-one-intro",
+                        "topic-day-two-family",
+                        "topic-day-two-session-one-transition",
+                        "topic-day-two-parents",
+                        "topic-day-two-session-one-outro",
+                    ],
+                },
+                "2": {
+                    "gid": "",
+                    "intents": [
+                        "topic-day-two-session-two-intro",
+                        "topic-pet-new",
+                        "topic-day-two-session-two-transition",
+                        "topic-lemurs",
+                        "topic-day-two-session-two-end",
+                    ],
+                },
+            },
         },
         "range_column": {
             "start": "B",
@@ -403,7 +400,7 @@ if __name__ == "__main__":
         "icons_path": f"{base_dir}/icons",
         "render_path": f"{base_dir}/renders",
         "sheet_data": sheet_data,
-        "parse_filepath": f"{data_dir}/ES-Day-1.xlsx",
+        "parse_filepath": f"{data_dir}/ES.xlsx",
         "style_data": style_data,
     }
 
