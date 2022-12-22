@@ -1,0 +1,11 @@
+[package]
+
+name = "dialogflow_payload_viewer"
+version = "0.1.0"
+author = "Farhabi Helal"
+email = "farhabi.helal@jp.honda-ri.com"
+maintainers = [
+    "Farhabi Helal"
+]
+
+[dependencies]
