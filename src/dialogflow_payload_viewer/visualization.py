@@ -43,79 +43,84 @@ class Visualizer:
         root_intents = self._api.get_root_intents()
         exportable_intents = self.get_exportable_root_intents()
 
-        for root_intent in root_intents:
+        languages = self.config["sheet_data"].get("languages", ["english"])
 
-            if root_intent.display_name not in exportable_intents:
-                continue
+        for language in languages:
+            for root_intent in root_intents:
 
-            graph = graphviz.Digraph(
-                name=f"{root_intent.display_name}",
-                directory=self.get_render_path(root_intent.display_name),
-                filename=f"{root_intent.display_name}.gv",
-                edge_attr={},
-                graph_attr={},
-                node_attr={
-                    "shape": "plaintext",
-                },
-                format="pdf",
-                engine="dot",
-                formatter="cairo",
-                renderer="cairo",
-            )
+                if root_intent.display_name not in exportable_intents:
+                    continue
 
-            def create_edge(node):
-                intent = node.intent_obj
+                graph = graphviz.Digraph(
+                    name=f"{root_intent.display_name}",
+                    directory=self.get_render_path(root_intent.display_name, language),
+                    filename=f"{root_intent.display_name}.gv",
+                    edge_attr={},
+                    graph_attr={},
+                    node_attr={
+                        "shape": "plaintext",
+                    },
+                    format="pdf",
+                    engine="dot",
+                    formatter="cairo",
+                    renderer="cairo",
+                )
 
-                self.create_record_node(graph, node)
+                def create_edge(node):
+                    intent = node.intent_obj
 
-                if intent.action:
-                    action = self._api.intents["display_name"].get(intent.action, None)
-                    if action:
-                        edge_style = self.config["style_data"]["edge"]["indirect"]
+                    self.create_record_node(graph, node, language)
+
+                    if intent.action:
+                        action = self._api.intents["display_name"].get(
+                            intent.action, None
+                        )
+                        if action:
+                            edge_style = self.config["style_data"]["edge"]["indirect"]
+                            graph.edge(
+                                f"{intent.display_name}",
+                                f"{action.display_name}",
+                                color=edge_style["color"],
+                                style=edge_style["style"],
+                                arrowsize=edge_style["arrowsize"],
+                                penwidth=edge_style["penwidth"],
+                            )
+
+                    if node.parent:
+                        parent = node.parent.intent_obj
+                        edge_style = self.config["style_data"]["edge"]["direct"]
                         graph.edge(
+                            f"{parent.display_name}",
                             f"{intent.display_name}",
-                            f"{action.display_name}",
                             color=edge_style["color"],
                             style=edge_style["style"],
                             arrowsize=edge_style["arrowsize"],
                             penwidth=edge_style["penwidth"],
                         )
+                    else:
+                        pass
 
-                if node.parent:
-                    parent = node.parent.intent_obj
-                    edge_style = self.config["style_data"]["edge"]["direct"]
-                    graph.edge(
-                        f"{parent.display_name}",
-                        f"{intent.display_name}",
-                        color=edge_style["color"],
-                        style=edge_style["style"],
-                        arrowsize=edge_style["arrowsize"],
-                        penwidth=edge_style["penwidth"],
-                    )
-                else:
-                    pass
+                    for child in node.children:
+                        create_edge(child)
 
-                for child in node.children:
-                    create_edge(child)
+                create_edge(root_intent)
 
-            create_edge(root_intent)
+                graph.render(
+                    # filename=f"{intent.display_name}.gv",
+                    # directory=f"{os.path.abspath(self.config['render_path'])}/{datetime.now().strftime('%Y-%m-%d-%H:%M')}",
+                    view=False,
+                    # format="pdf",
+                    # renderer="cairo",
+                    # engine="dot",
+                    # formatter="cairo",
+                    outfile=os.path.join(
+                        self.get_render_path(root_intent.display_name, language),
+                        f"{root_intent.display_name}.pdf",
+                    ),
+                )
+                self._graphs.append(graph)
 
-            graph.render(
-                # filename=f"{intent.display_name}.gv",
-                # directory=f"{os.path.abspath(self.config['render_path'])}/{datetime.now().strftime('%Y-%m-%d-%H:%M')}",
-                view=False,
-                # format="pdf",
-                # renderer="cairo",
-                # engine="dot",
-                # formatter="cairo",
-                outfile=os.path.join(
-                    self.get_render_path(root_intent.display_name),
-                    f"{root_intent.display_name}.pdf",
-                ),
-            )
-            self._graphs.append(graph)
-
-    def get_render_path(self, intent_name: str):
+    def get_render_path(self, intent_name: str, language: str = "english"):
         gid_mapping = self.config["sheet_data"]["gid_mapping"]
 
         path = os.path.abspath(self.config["render_path"])
@@ -127,6 +132,7 @@ class Visualizer:
                     path = os.path.join(
                         os.path.abspath(self.config["render_path"]),
                         datetime.now().strftime("%Y-%m-%d-%H:%M"),
+                        language.title(),
                         f"day-{day}".title(),
                         f"session-{session}".title(),
                     )
@@ -145,7 +151,7 @@ class Visualizer:
 
         return exportable_intentes
 
-    def get_url(self, node):
+    def get_url(self, node, language):
         intent_name = node.display_name
         sheet_data = self.config["sheet_data"]
 
@@ -188,14 +194,14 @@ class Visualizer:
             intents = self._parser._data_sheets[sheet_name]
             start_idx, end_idx = get_response_indices(intents, intent_name)
 
-            url = f"{sheet_data['base_url']}gid={gid}&amp;range={sheet_data['range_column']['start']}{start_idx}:{sheet_data['range_column']['end']}{end_idx}"
+            url = f"{sheet_data['base_url'][language]}gid={gid}&amp;range={sheet_data['range_column']['start']}{start_idx}:{sheet_data['range_column']['end']}{end_idx}"
 
         except Exception as e:
             pass
 
         return url
 
-    def create_record_node(self, graph, node):
+    def create_record_node(self, graph, node, language: str):
 
         record_def = ""
 
@@ -205,7 +211,7 @@ class Visualizer:
             else self.config["style_data"]["default"]
         )
 
-        url = self.get_url(node)
+        url = self.get_url(node, language)
 
         record_def += f"""
         <TABLE BGCOLOR="black" BORDER="4" CELLBORDER="0" CELLSPACING="0" CELLPADDING="20" STYLE="ROUNDED">
@@ -252,10 +258,14 @@ class Visualizer:
 if __name__ == "__main__":
 
     sheet_data = {
+        "languages": ["english", "spanish"],
         # Actual
-        # "base_url": "https://docs.google.com/spreadsheets/d/16jQ8q7M72dBdkxpcIKPXT1nRQbmD4wibZIQRgN_84X8/edit#",
+        "base_url": {
+            "english": "https://docs.google.com/spreadsheets/d/16jQ8q7M72dBdkxpcIKPXT1nRQbmD4wibZIQRgN_84X8/edit#",
+            "spanish": "https://docs.google.com/spreadsheets/d/1-VE3Rw25G_Z3DKpYPCcg-jmix3oUf2JdVMDLR6FJhOs/edit#",
+        },
         # Test
-        "base_url": "https://docs.google.com/spreadsheets/d/1kMeUTg8ewt-mtUago2ld7hG92vm1GBdT/edit#",
+        # "base_url": "https://docs.google.com/spreadsheets/d/1kMeUTg8ewt-mtUago2ld7hG92vm1GBdT/edit#",
         "parameters": ["gid", "range"],
         "gid_mapping": {
             "1": {
@@ -281,7 +291,7 @@ if __name__ == "__main__":
             },
             "2": {
                 "1": {
-                    "gid": "1291907260",
+                    "gid": "743627153",
                     "intents": [
                         "topic-day-two-session-one-intro",
                         "topic-day-two-family",
@@ -291,13 +301,57 @@ if __name__ == "__main__":
                     ],
                 },
                 "2": {
-                    "gid": "1576885209",
+                    "gid": "2061915944",
                     "intents": [
                         "topic-day-two-session-two-intro",
                         "topic-pet-new",
                         "topic-day-two-session-two-transition",
                         "topic-lemurs",
                         "topic-day-two-session-two-end",
+                    ],
+                },
+            },
+            "3": {
+                "1": {
+                    "gid": "81336119",
+                    "intents": [
+                        "topic-day-three-session-one-intro",
+                        "topic-day-three-food",
+                        "topic-day-three-session-one-transition",
+                        "topic-birthday",
+                        "topic-day-three-session-one-outro",
+                    ],
+                },
+                "2": {
+                    "gid": "1627598687",
+                    "intents": [
+                        "topic-day-three-session-two-intro",
+                        "topic-sports",
+                        "topic-day-three-session-two-transition",
+                        "topic-day-three-hobbies",
+                        "topic-day-three-session-two-outro",
+                    ],
+                },
+            },
+            "4": {
+                "1": {
+                    "gid": "592896325",
+                    "intents": [
+                        "topic-day-four-session-one-intro",
+                        "topic-day-four-school",
+                        "topic-day-four-session-one-transition",
+                        "topic-day-four-friends",
+                        "topic-day-four-session-one-outro",
+                    ],
+                },
+                "2": {
+                    "gid": "804812225",
+                    "intents": [
+                        "topic-day-four-session-two-intro",
+                        "topic-language",
+                        "topic-day-four-session-two-transition",
+                        "topic-music",
+                        "topic-day-four-session-two-outro",
                     ],
                 },
             },
