@@ -355,6 +355,36 @@ if __name__ == "__main__":
                     ],
                 },
             },
+            "5": {
+                "1": {
+                    "gid": "1381156119",
+                    "intents": [
+                        "topic-day-five-session-one-intro",
+                        "topic-day-five-weather",
+                        "topic-day-five-session-one-transition",
+                        "topic-day-five-clothing",
+                        "topic-day-five-session-one-outro",
+                    ],
+                },
+                "2": {
+                    "gid": "148830916",
+                    "intents": [
+                        "topic-day-five-session-two-intro",
+                        "topic-day-five-travel",
+                        "topic-day-five-session-two-transition",
+                        "topic-olympics",
+                        "topic-day-five-session-two-outro",
+                    ],
+                },
+                "3": {
+                    "gid": "2048883617",
+                    "intents": [
+                        "topic-day-five-session-three-intro",
+                        "topic-day-five-session-three-poem",
+                        "topic-day-five-session-three-outro",
+                    ],
+                },
+            },
         },
         "range_column": {
             "start": "B",
