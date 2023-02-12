@@ -9,6 +9,8 @@ sys.path.append(
 from dialogflow import Dialogflow, Intent
 from graphviz import Digraph
 
+from node_definitions import get_node_def_basic
+
 
 class BaseVisualizer:
     def __init__(self, config: dict) -> None:
@@ -107,7 +109,10 @@ class BaseVisualizer:
         """ """
         intent = node.intent_obj
 
-        graph.node(node.display_name, self.get_node_definition(node))
+        graph.node(
+            node.display_name,
+            self.get_node_definition(node),
+        )
 
         if intent.action:
             action = self._api.intents["display_name"].get(intent.action, None)
@@ -143,50 +148,8 @@ class BaseVisualizer:
         path = os.path.abspath(self.config["render_path"])
         return path
 
-    def get_node_definition(self, node: Intent):
-        definition = ""
-
-        style_data = (
-            self.config["style_data"]["fallback"]
-            if node.intent_obj.is_fallback
-            else self.config["style_data"]["default"]
-        )
-
-        definition += f"""
-        <TABLE BGCOLOR="black" BORDER="4" CELLBORDER="0" CELLSPACING="0" CELLPADDING="20" STYLE="ROUNDED">
-        <TR>
-            <TD PORT="intent_name" COLSPAN="2" STYLE="ROUNDED" BGCOLOR="{style_data['intent-name']['color']}" CELLPADDING="30" HREF=""><FONT POINT-SIZE="{style_data['intent-name']['font-size']}" FACE="{style_data['intent-name']['font']}"><b>{node.display_name}</b></FONT></TD>
-        </TR>
-        """
-
-        # if node.intent_obj.action:
-        #     definition += f"""
-        # <TR>
-        #     <TD BGCOLOR="{style_data['action']['color']}" ALIGN="CENTER" STYLE="ROUNDED"><IMG SRC="{self.config["icons_path"]}/action-004-64x64.png"/></TD>
-        #     <TD PORT="action" BGCOLOR="{style_data['action']['color']}" ALIGN="CENTER" STYLE="ROUNDED"><FONT POINT-SIZE="{style_data['action']['font-size']}" FACE="{style_data['action']['font']}">{node.intent_obj.action}</FONT></TD>
-        # </TR>
-        # """
-
-        if node.has_text_messages:
-            for i, responses in enumerate(node.text_messages):
-                if i > 0:
-                    definition += f"""
-        <TR>
-            <TD COLSPAN="2" BGCOLOR="black" CELLPADDING="5" STYLE="ROUNDED"></TD>
-        </TR>
-        """
-                for j, paraphrase in enumerate(responses):
-                    definition += f"""
-        <TR>
-            <TD COLSPAN="2" BGCOLOR="{style_data['messages']['color']}" CELLPADDING="20" STYLE="ROUNDED"><FONT POINT-SIZE="{style_data['messages']['font-size']}" FACE="{style_data['messages']['font']}"><i>{paraphrase}</i></FONT></TD>
-        </TR>
-        """
-
-        definition += f"""
-        </TABLE>
-        """
-
-        return f"<{definition}>"
+    def get_node_definition(self, node: Intent, **kwargs) -> str:
+        return get_node_def_basic(node, style_data=self.config["style_data"], **kwargs)
 
     def view(self):
         for graph in self._graphs:
