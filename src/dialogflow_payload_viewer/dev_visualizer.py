@@ -33,10 +33,6 @@ class DevVisualizer(BaseVisualizer):
         path = os.path.abspath(self.config["render_path"])
         return path
 
-    def view(self):
-        for graph in self._graphs:
-            graph.view()
-
 
 if __name__ == "__main__":
     style_data = {
@@ -129,16 +125,32 @@ if __name__ == "__main__":
     data_dir = os.path.join(base_dir, "data")
 
     config = {
-        "project_id": "empathetic-stimulator-owp9",
-        "credential": f"{agent_dir}/es.json",
+        # "project_id": "haru-smalltalk-all-topics-girm",
+        "credential": f"{agent_dir}/haru-chat-games.json",
         "icons_path": f"{base_dir}/icons",
-        "render_path": f"{base_dir}/renders",
+        "render_path": f"{base_dir}/renders/haruscope",
         "style_data": style_data,
     }
 
     viz = DevVisualizer(config)
     viz.create(
-        intent_names=["topic-day-one-session-one-age"],
+        intent_names=[
+            "haruscope",
+            "haruscope-intro",
+            "haruscope-outro",
+            "haruscope-aries",
+            "haruscope-libra",
+            "haruscope-leo",
+            "haruscope-cancer",
+            "haruscope-scorpio",
+            "haruscope-virgo",
+            "haruscope-gemini",
+            "haruscope-capricorn",
+            "haruscope-pisces",
+            "haruscope-aquarius",
+            "haruscope-taurus",
+            "haruscope-sagittarius",
+        ],
         # blacklisted_intent_names=["knew-baseball-fact-no"],
     )
     # viz.view()

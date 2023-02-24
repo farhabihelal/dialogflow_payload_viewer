@@ -12,7 +12,7 @@ from graphviz import Digraph
 from node_definitions import get_node_def_basic
 
 
-class BaseVisualizer:
+class CreativeVisualizer:
     def __init__(self, config: dict) -> None:
         self.configure(config)
         self._api = Dialogflow(self.config)
@@ -22,17 +22,12 @@ class BaseVisualizer:
     def configure(self, config: dict):
         self.config = config
 
-    def load(self, language_code="en"):
+    def load(self):
         """ """
-        self._api.get_intents(language_code=language_code)
+        self._api.get_intents()
         self._api.generate_tree()
 
-    def create(
-        self,
-        intent_names: list = None,
-        blacklisted_intent_names: list = [],
-        language_code=None,
-    ):
+    def create(self, intent_names: list = None, blacklisted_intent_names: list = []):
         """
         Intent Filtering Logic
 
@@ -41,7 +36,7 @@ class BaseVisualizer:
         ALLOWED     : If intent_name is found in intent_names. Does not matter blacklisted_intent_names.
         FILTERED    : Only if intent_name is found in blacklisted_intent_names.
         """
-        self.load(language_code=language_code)
+        self.load()
 
         intents = [
             self._api.intents["display_name"][x]
@@ -110,13 +105,13 @@ class BaseVisualizer:
         )
         return graph
 
-    def create_edge(self, graph: Digraph, node: Intent, **kwargs):
+    def create_edge(self, graph: Digraph, node: Intent):
         """ """
         intent = node.intent_obj
 
         graph.node(
             node.display_name,
-            self.get_node_definition(node, **kwargs),
+            self.get_node_definition(node),
         )
 
         if intent.action:
@@ -147,7 +142,7 @@ class BaseVisualizer:
             pass
 
         for child in node.children:
-            self.create_edge(graph, child, **kwargs)
+            self.create_edge(graph, child)
 
     def get_render_path(self, node: Intent):
         path = os.path.abspath(self.config["render_path"])
@@ -259,7 +254,7 @@ if __name__ == "__main__":
         "style_data": style_data,
     }
 
-    viz = BaseVisualizer(config)
+    viz = CreativeVisualizer(config)
     viz.create(
         intent_names=["topic-day-one-session-one-age"],
         # blacklisted_intent_names=["knew-baseball-fact-no"],
