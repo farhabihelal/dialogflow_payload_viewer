@@ -10,7 +10,7 @@ from base_visualizer import BaseVisualizer
 from dialogflow import Dialogflow, Intent
 from graphviz import Digraph
 
-from node_definitions import get_node_def_basic
+from node_definitions import get_node_def_basic, get_node_def_advanced
 
 import google.cloud.dialogflow_v2 as dialogflow_v2
 
@@ -20,7 +20,10 @@ class DevVisualizer(BaseVisualizer):
         super().__init__(config)
 
     def get_node_definition(self, node: Intent, **kwargs) -> str:
-        return get_node_def_basic(
+        # return get_node_def_basic(
+        #     node, style_data=self.config["style_data"], url=self.get_url(node)
+        # )
+        return get_node_def_advanced(
             node, style_data=self.config["style_data"], url=self.get_url(node)
         )
 
@@ -35,90 +38,7 @@ class DevVisualizer(BaseVisualizer):
 
 
 if __name__ == "__main__":
-    style_data = {
-        "default": {
-            "intent-name": {
-                "color": "darkcyan",
-                "font-size": "20",
-                "font": "Calibri",
-            },
-            "action": {
-                "color": "darkseagreen4",
-                "font-size": "16",
-                "font": "Calibri",
-            },
-            "messages": {
-                "color": "burlywood1",
-                "font-size": "18",
-                "font": "Calibri",
-            },
-        },
-        "fallback": {
-            "intent-name": {
-                "color": "coral",
-                "font-size": "20",
-                "font": "Calibri",
-            },
-            "action": {
-                "color": "darkseagreen4",
-                "font-size": "16",
-                "font": "Calibri",
-            },
-            "messages": {
-                "color": "burlywood1",
-                "font-size": "18",
-                "font": "Calibri",
-            },
-        },
-        "edge": {
-            "direct": {
-                "color": "black",
-                "arrowsize": "2.0",
-                "penwidth": "3.0",
-                "style": "",
-            },
-            "indirect": {
-                "color": "firebrick2",
-                "arrowsize": "2.0",
-                "penwidth": "3.0",
-                "style": "",
-            },
-        }
-        # "question": {
-        #     "intent-name": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        #     "action": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        #     "messages": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        # },
-        # "answer": {
-        #     "intent-name": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        #     "action": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        #     "messages": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        # },
-    }
+    from styles import style_data
 
     base_dir = os.path.abspath(f"{os.path.dirname(__file__)}/../../")
     agent_dir = os.path.join(base_dir, ".temp/keys")
