@@ -10,7 +10,7 @@ from base_visualizer import BaseVisualizer
 from dialogflow import Dialogflow, Intent
 from graphviz import Digraph
 
-from node_definitions import get_node_def_basic, get_node_def_advanced
+from node_definitions import get_node_def_advanced
 
 import google.cloud.dialogflow_v2 as dialogflow_v2
 
@@ -45,31 +45,31 @@ if __name__ == "__main__":
     data_dir = os.path.join(base_dir, "data")
 
     config = {
-        # "project_id": "haru-smalltalk-all-topics-girm",
         "credential": f"{agent_dir}/haru-chat-games.json",
         "icons_path": f"{base_dir}/icons",
-        "render_path": f"{base_dir}/renders/haruscope",
+        "render_path": f"{base_dir}/renders/haru-games-dev",
         "style_data": style_data,
     }
 
     viz = DevVisualizer(config)
     viz.create(
         intent_names=[
+            "madlibs",
+            "game-intros",
+            "game-prompt",
+            "game-prompt-advanced",
+            "game-reaction",
+            "goodbye",
             "haruscope",
             "haruscope-intro",
             "haruscope-outro",
-            "haruscope-aries",
-            "haruscope-libra",
-            "haruscope-leo",
-            "haruscope-cancer",
-            "haruscope-scorpio",
-            "haruscope-virgo",
-            "haruscope-gemini",
-            "haruscope-capricorn",
-            "haruscope-pisces",
-            "haruscope-aquarius",
-            "haruscope-taurus",
-            "haruscope-sagittarius",
+            "humor-protocol",
+            "humor-data-compressed",
+            "trivia-protocol",
+            "trivia-data-compressed",
+            "would-you-rather-protocol",
+            "haru-reactions",
+            "topic-intro",
         ],
         # blacklisted_intent_names=["knew-baseball-fact-no"],
     )

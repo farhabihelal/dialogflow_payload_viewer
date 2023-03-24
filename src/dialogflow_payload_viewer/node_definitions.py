@@ -1,12 +1,24 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(f"{os.path.dirname(__file__)}/.."))
+
 from dialogflow import Intent
+
+import html
 
 
 def get_node_def_basic(node: Intent, **kwargs):
     definition = ""
 
+    custom_payload: dict = node.custom_payload
+    node_type = custom_payload.get("node_type", "")
+
     style_data = (
         kwargs["style_data"]["fallback"]
-        if node.intent_obj.is_fallback
+        if node_type == "FallbackNode"
+        else kwargs["style_data"]["disabled"]
+        if node_type == "DisabledNode" or node.intent_obj.priority < 0
         else kwargs["style_data"]["default"]
     )
 
@@ -36,7 +48,7 @@ def get_node_def_basic(node: Intent, **kwargs):
             for j, paraphrase in enumerate(responses):
                 definition += f"""
         <TR>
-            <TD COLSPAN="2" BGCOLOR="{style_data['messages']['color']}" CELLPADDING="20" STYLE="ROUNDED"><FONT POINT-SIZE="{style_data['messages']['font-size']}" FACE="{style_data['messages']['font']}"><i>{paraphrase}</i></FONT></TD>
+            <TD COLSPAN="2" BGCOLOR="{style_data['messages']['color']}" CELLPADDING="20" STYLE="ROUNDED"><FONT POINT-SIZE="{style_data['messages']['font-size']}" FACE="{style_data['messages']['font']}"><i>{html.escape(paraphrase)}</i></FONT></TD>
         </TR>
         """
 
@@ -96,7 +108,7 @@ def get_node_def_advanced(node: Intent, **kwargs):
             for j, paraphrase in enumerate(responses):
                 definition += f"""
         <TR>
-            <TD COLSPAN="2" BGCOLOR="{style_data['messages']['color']}" CELLPADDING="20" STYLE="ROUNDED"><FONT POINT-SIZE="{style_data['messages']['font-size']}" FACE="{style_data['messages']['font']}"><i>{paraphrase}</i></FONT></TD>
+            <TD COLSPAN="2" BGCOLOR="{style_data['messages']['color']}" CELLPADDING="20" STYLE="ROUNDED"><FONT POINT-SIZE="{style_data['messages']['font-size']}" FACE="{style_data['messages']['font']}"><i>{html.escape(paraphrase)}</i></FONT></TD>
         </TR>
         """
 

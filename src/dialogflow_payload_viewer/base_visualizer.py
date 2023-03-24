@@ -43,6 +43,12 @@ class BaseVisualizer:
         """
         self.load(language_code=language_code)
 
+        intent_names = (
+            intent_names
+            if intent_names
+            else [x.display_name for x in self._api.get_root_intents()]
+        )
+
         intents = [
             self._api.intents["display_name"][x]
             for x in self.filter(
