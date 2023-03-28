@@ -3,7 +3,7 @@ import os
 
 sys.path.append(os.path.abspath(f"{os.path.dirname(__file__)}/../dialogflow-api/src/"))
 sys.path.append(
-    os.path.abspath(f"{os.path.dirname(__file__)}/../dialogflow_payload_utils")
+    os.path.abspath(f"{os.path.dirname(__file__)}/../dialogflow_payload_utils/src")
 )
 
 
@@ -32,7 +32,6 @@ class ESVisualizerDev(ESVisualizer):
 
 
 if __name__ == "__main__":
-
     sheet_data = {
         "languages": ["english", "spanish"],
         # Actual
@@ -181,7 +180,7 @@ if __name__ == "__main__":
         "credential": f"{agent_dir}/es.json",
         "icons_path": f"{base_dir}/icons",
         "render_path": f"{base_dir}/renders/ES-Dev",
-        "parse_filepath": f"{data_dir}/ES_merged.xlsx",
+        "parse_filepath": f"{data_dir}/ES.xlsx",
         "style_data": style_data,
         "sheet_data": sheet_data,
     }

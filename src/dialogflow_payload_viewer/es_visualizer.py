@@ -3,13 +3,13 @@ import os
 
 sys.path.append(os.path.abspath(f"{os.path.dirname(__file__)}/../dialogflow-api/src/"))
 sys.path.append(
-    os.path.abspath(f"{os.path.dirname(__file__)}/../dialogflow_payload_utils")
+    os.path.abspath(f"{os.path.dirname(__file__)}/../dialogflow_payload_utils/src")
 )
 
 from datetime import datetime
 
 from dialogflow import Dialogflow, Intent
-from dialogflow_payload_gen.csv_parser_xl import CSVParserXL
+from dialogflow_payload_gen.parser_xl import ParserXL
 
 from graphviz import Digraph
 
@@ -21,7 +21,7 @@ class ESVisualizer(BaseVisualizer):
     def __init__(self, config: dict) -> None:
         super().__init__(config)
 
-        self._parser = CSVParserXL(self.config)
+        self._parser = ParserXL(self.config)
         self._parser.load(filepath=self.config["parse_filepath"])
 
     def load(self, language_code=None):
@@ -195,7 +195,6 @@ def get_exportable_root_intents(sheet_data: dict) -> list:
 
 
 if __name__ == "__main__":
-
     sheet_data = {
         "languages": ["english", "spanish"],
         # Actual
@@ -334,90 +333,92 @@ if __name__ == "__main__":
         },
     }
 
-    style_data = {
-        "default": {
-            "intent-name": {
-                "color": "darkcyan",
-                "font-size": "20",
-                "font": "Calibri",
-            },
-            "action": {
-                "color": "darkseagreen4",
-                "font-size": "16",
-                "font": "Calibri",
-            },
-            "messages": {
-                "color": "burlywood1",
-                "font-size": "18",
-                "font": "Calibri",
-            },
-        },
-        "fallback": {
-            "intent-name": {
-                "color": "coral",
-                "font-size": "20",
-                "font": "Calibri",
-            },
-            "action": {
-                "color": "darkseagreen4",
-                "font-size": "16",
-                "font": "Calibri",
-            },
-            "messages": {
-                "color": "burlywood1",
-                "font-size": "18",
-                "font": "Calibri",
-            },
-        },
-        "edge": {
-            "direct": {
-                "color": "black",
-                "arrowsize": "2.0",
-                "penwidth": "3.0",
-                "style": "",
-            },
-            "indirect": {
-                "color": "firebrick2",
-                "arrowsize": "2.0",
-                "penwidth": "3.0",
-                "style": "",
-            },
-        }
-        # "question": {
-        #     "intent-name": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        #     "action": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        #     "messages": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        # },
-        # "answer": {
-        #     "intent-name": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        #     "action": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        #     "messages": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        # },
-    }
+    # style_data = {
+    #     "default": {
+    #         "intent-name": {
+    #             "color": "darkcyan",
+    #             "font-size": "20",
+    #             "font": "Calibri",
+    #         },
+    #         "action": {
+    #             "color": "darkseagreen4",
+    #             "font-size": "16",
+    #             "font": "Calibri",
+    #         },
+    #         "messages": {
+    #             "color": "burlywood1",
+    #             "font-size": "18",
+    #             "font": "Calibri",
+    #         },
+    #     },
+    #     "fallback": {
+    #         "intent-name": {
+    #             "color": "coral",
+    #             "font-size": "20",
+    #             "font": "Calibri",
+    #         },
+    #         "action": {
+    #             "color": "darkseagreen4",
+    #             "font-size": "16",
+    #             "font": "Calibri",
+    #         },
+    #         "messages": {
+    #             "color": "burlywood1",
+    #             "font-size": "18",
+    #             "font": "Calibri",
+    #         },
+    #     },
+    #     "edge": {
+    #         "direct": {
+    #             "color": "black",
+    #             "arrowsize": "2.0",
+    #             "penwidth": "3.0",
+    #             "style": "",
+    #         },
+    #         "indirect": {
+    #             "color": "firebrick2",
+    #             "arrowsize": "2.0",
+    #             "penwidth": "3.0",
+    #             "style": "",
+    #         },
+    #     }
+    #     # "question": {
+    #     #     "intent-name": {
+    #     #         "color": "darkturquoise",
+    #     #         "font-size": "20",
+    #     #         "font": "Calibri",
+    #     #     },
+    #     #     "action": {
+    #     #         "color": "darkturquoise",
+    #     #         "font-size": "20",
+    #     #         "font": "Calibri",
+    #     #     },
+    #     #     "messages": {
+    #     #         "color": "darkturquoise",
+    #     #         "font-size": "20",
+    #     #         "font": "Calibri",
+    #     #     },
+    #     # },
+    #     # "answer": {
+    #     #     "intent-name": {
+    #     #         "color": "darkturquoise",
+    #     #         "font-size": "20",
+    #     #         "font": "Calibri",
+    #     #     },
+    #     #     "action": {
+    #     #         "color": "darkturquoise",
+    #     #         "font-size": "20",
+    #     #         "font": "Calibri",
+    #     #     },
+    #     #     "messages": {
+    #     #         "color": "darkturquoise",
+    #     #         "font-size": "20",
+    #     #         "font": "Calibri",
+    #     #     },
+    #     # },
+    # }
+
+    from styles import es_style_data
 
     base_dir = os.path.abspath(f"{os.path.dirname(__file__)}/../../")
     agent_dir = os.path.join(base_dir, ".temp/keys")
@@ -427,9 +428,9 @@ if __name__ == "__main__":
         # "credential": f"{agent_dir}/child-in-hospital.json",
         "credential": f"{agent_dir}/es.json",
         "icons_path": f"{base_dir}/icons",
-        "render_path": f"{base_dir}/renders",
-        "parse_filepath": f"{data_dir}/ES_v3.xlsx",
-        "style_data": style_data,
+        "render_path": f"{base_dir}/renders/ES-Demo",
+        "parse_filepath": f"{data_dir}/Haru Hospital Scene Conversations (for English) (v2 Dev).xlsx",
+        "style_data": es_style_data,
         "sheet_data": sheet_data,
         "language_code": "en",
     }
