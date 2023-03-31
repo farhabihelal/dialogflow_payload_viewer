@@ -22,12 +22,12 @@ class ESVisualizer(BaseVisualizer):
         super().__init__(config)
 
         self._parser = ParserXL(self.config)
-        self._parser.load(filepath=self.config["parse_filepath"])
 
     def load(self, language_code=None):
-        return super().load(
+        super().load(
             language_code if language_code else self.config.get("language_code", "en")
         )
+        self._parser.load(filepath=self.config["parse_filepath"])
 
     def create_graph(self, intents: list):
         """ """
@@ -333,91 +333,6 @@ if __name__ == "__main__":
         },
     }
 
-    # style_data = {
-    #     "default": {
-    #         "intent-name": {
-    #             "color": "darkcyan",
-    #             "font-size": "20",
-    #             "font": "Calibri",
-    #         },
-    #         "action": {
-    #             "color": "darkseagreen4",
-    #             "font-size": "16",
-    #             "font": "Calibri",
-    #         },
-    #         "messages": {
-    #             "color": "burlywood1",
-    #             "font-size": "18",
-    #             "font": "Calibri",
-    #         },
-    #     },
-    #     "fallback": {
-    #         "intent-name": {
-    #             "color": "coral",
-    #             "font-size": "20",
-    #             "font": "Calibri",
-    #         },
-    #         "action": {
-    #             "color": "darkseagreen4",
-    #             "font-size": "16",
-    #             "font": "Calibri",
-    #         },
-    #         "messages": {
-    #             "color": "burlywood1",
-    #             "font-size": "18",
-    #             "font": "Calibri",
-    #         },
-    #     },
-    #     "edge": {
-    #         "direct": {
-    #             "color": "black",
-    #             "arrowsize": "2.0",
-    #             "penwidth": "3.0",
-    #             "style": "",
-    #         },
-    #         "indirect": {
-    #             "color": "firebrick2",
-    #             "arrowsize": "2.0",
-    #             "penwidth": "3.0",
-    #             "style": "",
-    #         },
-    #     }
-    #     # "question": {
-    #     #     "intent-name": {
-    #     #         "color": "darkturquoise",
-    #     #         "font-size": "20",
-    #     #         "font": "Calibri",
-    #     #     },
-    #     #     "action": {
-    #     #         "color": "darkturquoise",
-    #     #         "font-size": "20",
-    #     #         "font": "Calibri",
-    #     #     },
-    #     #     "messages": {
-    #     #         "color": "darkturquoise",
-    #     #         "font-size": "20",
-    #     #         "font": "Calibri",
-    #     #     },
-    #     # },
-    #     # "answer": {
-    #     #     "intent-name": {
-    #     #         "color": "darkturquoise",
-    #     #         "font-size": "20",
-    #     #         "font": "Calibri",
-    #     #     },
-    #     #     "action": {
-    #     #         "color": "darkturquoise",
-    #     #         "font-size": "20",
-    #     #         "font": "Calibri",
-    #     #     },
-    #     #     "messages": {
-    #     #         "color": "darkturquoise",
-    #     #         "font-size": "20",
-    #     #         "font": "Calibri",
-    #     #     },
-    #     # },
-    # }
-
     from styles import es_style_data
 
     base_dir = os.path.abspath(f"{os.path.dirname(__file__)}/../../")
@@ -429,7 +344,7 @@ if __name__ == "__main__":
         "credential": f"{agent_dir}/es.json",
         "icons_path": f"{base_dir}/icons",
         "render_path": f"{base_dir}/renders/ES-Demo",
-        "parse_filepath": f"{data_dir}/Haru Hospital Scene Conversations (for English) (v2 Dev).xlsx",
+        "parse_filepath": f"{data_dir}/ES_GS.xlsx",
         "style_data": es_style_data,
         "sheet_data": sheet_data,
         "language_code": "en",
