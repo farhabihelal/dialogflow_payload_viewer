@@ -5,11 +5,17 @@ sys.path.append(os.path.abspath(f"{os.path.dirname(__file__)}/../dialogflow-api/
 sys.path.append(
     os.path.abspath(f"{os.path.dirname(__file__)}/../dialogflow_payload_utils/src")
 )
+sys.path.append(
+    os.path.abspath(
+        f"{os.path.dirname(__file__)}/../dialogflow_payload_utils/scripts/es_demo"
+    )
+)
 
 from datetime import datetime
 
 from dialogflow import Dialogflow, Intent
-from dialogflow_payload_gen.parser_xl import ParserXL
+
+from es_parser import ESParser
 
 from graphviz import Digraph
 
@@ -21,7 +27,7 @@ class ESVisualizer(BaseVisualizer):
     def __init__(self, config: dict) -> None:
         super().__init__(config)
 
-        self._parser = ParserXL(self.config)
+        self._parser = ESParser(self.config)
 
     def load(self, language_code=None):
         super().load(
@@ -341,7 +347,8 @@ if __name__ == "__main__":
 
     config = {
         # "credential": f"{agent_dir}/child-in-hospital.json",
-        "credential": f"{agent_dir}/es.json",
+        # "credential": f"{agent_dir}/es.json",
+        "credential": f"{agent_dir}/haru-test.json",
         "icons_path": f"{base_dir}/icons",
         "render_path": f"{base_dir}/renders/ES-Demo",
         "parse_filepath": f"{data_dir}/ES_GS.xlsx",
