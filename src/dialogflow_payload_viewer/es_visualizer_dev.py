@@ -16,6 +16,14 @@ class ESVisualizerDev(ESVisualizer):
     def __init__(self, config: dict) -> None:
         super().__init__(config)
 
+    def load(self, language_code: str = None):
+        self._api.get_intents(
+            language_code=language_code
+            if language_code
+            else self.config["language_code"]
+        )
+        self._api.generate_tree()
+
     def get_node_definition(self, node: Intent, **kwargs) -> str:
         # return get_node_def_basic(
         #     node, style_data=self.config["style_data"], url=self.get_url(node)
@@ -39,8 +47,8 @@ if __name__ == "__main__":
             # v1
             # "english": "https://docs.google.com/spreadsheets/d/16jQ8q7M72dBdkxpcIKPXT1nRQbmD4wibZIQRgN_84X8/edit#",
             # v2
-            "english": "https://docs.google.com/spreadsheets/d/1EDO4AebEr8kygh9Bxt_uO0m2jJ-0wITpolYjtKBjo04/edit#",
-            "spanish": "https://docs.google.com/spreadsheets/d/1-VE3Rw25G_Z3DKpYPCcg-jmix3oUf2JdVMDLR6FJhOs/edit#",
+            # "english": "https://docs.google.com/spreadsheets/d/1EDO4AebEr8kygh9Bxt_uO0m2jJ-0wITpolYjtKBjo04/edit#",
+            # "spanish": "https://docs.google.com/spreadsheets/d/1-VE3Rw25G_Z3DKpYPCcg-jmix3oUf2JdVMDLR6FJhOs/edit#",
             # Test
             # "english": "https://docs.google.com/spreadsheets/d/1QDuaijqR4I7CFws_kzww6JZS08QAde6i/edit#",
         },
@@ -178,11 +186,12 @@ if __name__ == "__main__":
 
     config = {
         "credential": f"{agent_dir}/es.json",
+        # "credential": f"{agent_dir}/haru-test.json",
         "icons_path": f"{base_dir}/icons",
         "render_path": f"{base_dir}/renders/ES-Dev",
-        "parse_filepath": f"{data_dir}/ES.xlsx",
         "style_data": style_data,
         "sheet_data": sheet_data,
+        "language_code": "en",
     }
 
     viz = ESVisualizerDev(config)
