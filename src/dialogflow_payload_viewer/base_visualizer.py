@@ -10,6 +10,7 @@ from dialogflow import Dialogflow, Intent
 from graphviz import Digraph
 
 from node_definitions import get_node_def_basic
+from legend_definitions import get_legend_def
 
 
 class BaseVisualizer:
@@ -32,6 +33,7 @@ class BaseVisualizer:
         intent_names: list = None,
         blacklisted_intent_names: list = [],
         language_code=None,
+        **kwargs,
     ):
         """
         Intent Filtering Logic
@@ -57,7 +59,7 @@ class BaseVisualizer:
                 blacklisted_intent_names,
             )
         ]
-        self.create_graph(intents=intents)
+        self.create_graph(intents=intents, **kwargs)
 
     def filter(self, input: list, whitelist: list, blacklist: list):
         return [
@@ -68,18 +70,21 @@ class BaseVisualizer:
             or (whitelist is None and value not in blacklist)
         ]
 
-    def create_graph(self, intents: list):
+    def create_graph(self, intents: list, **kwargs):
         """ """
         for intent in intents:
             intent: Intent
             graph = self.get_graph(
                 name=f"{intent.display_name}",
-                directory=self.get_render_path(intent.display_name),
+                directory=os.path.join(
+                    self.get_render_path(intent.display_name), "DOT"
+                ),
                 filename=f"{intent.display_name}.gv",
                 format="pdf",
             )
 
-            self.create_edge(graph, intent)
+            self.create_edge(graph, intent, **kwargs)
+            # self.create_legend(graph, self.config.get("legend_data", {}))
 
             graph.render(
                 # filename=f"{intent.display_name}.gv",
@@ -87,7 +92,7 @@ class BaseVisualizer:
                 view=False,
                 # format="pdf",
                 # renderer="cairo",
-                # engine="dot",
+                engine="neato",
                 # formatter="cairo",
                 outfile=os.path.join(
                     self.get_render_path(intent.display_name),
@@ -95,6 +100,32 @@ class BaseVisualizer:
                 ),
             )
             self._graphs.append(graph)
+
+    def get_graph_legend_definitions(self, legend_data: dict):
+        return get_legend_def(legend_data)
+
+    def create_legend(self, graph: Digraph, legend_data: dict) -> Digraph:
+        graph.node(
+            "legend", self.get_graph_legend_definitions(legend_data), pos="20,20!"
+        )
+
+        def create_legend_edge(graph: Digraph, legend_data: dict):
+            edges = legend_data.get("edges", [])
+
+            for i, edge in enumerate(edges):
+                graph.edge(
+                    f"legend_edge_label_{i}",
+                    f"legend_edge_color_{i}",
+                    color=f"{edge['color']}",
+                    style=f"{edge['style']}",
+                    arrowsize=f"{edge['arrowsize']}",
+                    penwidth=f"{edge['penwidth']}",
+                    # **edge,
+                )
+
+        create_legend_edge(graph, legend_data)
+
+        return graph
 
     def get_graph(
         self, name=None, directory=None, filename=None, format=None
@@ -168,101 +199,36 @@ class BaseVisualizer:
 
 
 if __name__ == "__main__":
-    style_data = {
-        "default": {
-            "intent-name": {
-                "color": "darkcyan",
-                "font-size": "20",
-                "font": "Calibri",
-            },
-            "action": {
-                "color": "darkseagreen4",
-                "font-size": "16",
-                "font": "Calibri",
-            },
-            "messages": {
-                "color": "burlywood1",
-                "font-size": "18",
-                "font": "Calibri",
-            },
-        },
-        "fallback": {
-            "intent-name": {
-                "color": "coral",
-                "font-size": "20",
-                "font": "Calibri",
-            },
-            "action": {
-                "color": "darkseagreen4",
-                "font-size": "16",
-                "font": "Calibri",
-            },
-            "messages": {
-                "color": "burlywood1",
-                "font-size": "18",
-                "font": "Calibri",
-            },
-        },
-        "edge": {
-            "direct": {
-                "color": "black",
-                "arrowsize": "2.0",
-                "penwidth": "3.0",
-                "style": "",
-            },
-            "indirect": {
-                "color": "firebrick2",
-                "arrowsize": "2.0",
-                "penwidth": "3.0",
-                "style": "",
-            },
-        }
-        # "question": {
-        #     "intent-name": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        #     "action": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        #     "messages": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        # },
-        # "answer": {
-        #     "intent-name": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        #     "action": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        #     "messages": {
-        #         "color": "darkturquoise",
-        #         "font-size": "20",
-        #         "font": "Calibri",
-        #     },
-        # },
-    }
-
     base_dir = os.path.abspath(f"{os.path.dirname(__file__)}/../../")
     agent_dir = os.path.join(base_dir, ".temp/keys")
     data_dir = os.path.join(base_dir, "data")
 
+    from styles import style_data
+
+    legend_data = {
+        "nodes": [
+            {
+                "label": "question node",
+                "color": "red",
+            },
+        ],
+        "edges": [
+            {
+                "label": "impl",
+                "color": "black",
+                "style": "",
+                "arrowsize": "2",
+                "penwidth": "3.0",
+            },
+        ],
+    }
+
     config = {
-        "project_id": "empathetic-stimulator-owp9",
         "credential": f"{agent_dir}/es.json",
         "icons_path": f"{base_dir}/icons",
         "render_path": f"{base_dir}/renders",
         "style_data": style_data,
+        "legend_data": legend_data,
     }
 
     viz = BaseVisualizer(config)

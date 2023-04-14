@@ -241,7 +241,8 @@ if __name__ == "__main__":
             },
             "2": {
                 "1": {
-                    "gid": "743627153",
+                    # "gid": "743627153",   # v1
+                    "gid": "909097088",  # v2
                     "intents": [
                         "topic-day-two-session-one-intro",
                         "topic-day-two-family",
@@ -251,7 +252,8 @@ if __name__ == "__main__":
                     ],
                 },
                 "2": {
-                    "gid": "2061915944",
+                    # "gid": "2061915944",      # v1
+                    "gid": "1168972418",  # v2
                     "intents": [
                         "topic-day-two-session-two-intro",
                         "topic-pet-new",
@@ -262,26 +264,26 @@ if __name__ == "__main__":
                 },
             },
             # "3": {
-            #     "1": {
-            #         "gid": "81336119",
-            #         "intents": [
-            #             "topic-day-three-session-one-intro",
-            #             "topic-day-three-food",
-            #             "topic-day-three-session-one-transition",
-            #             "topic-birthday",
-            #             "topic-day-three-session-one-outro",
-            #         ],
-            #     },
-            #     "2": {
-            #         "gid": "1627598687",
-            #         "intents": [
-            #             "topic-day-three-session-two-intro",
-            #             "topic-sports",
-            #             "topic-day-three-session-two-transition",
-            #             "topic-day-three-hobbies",
-            #             "topic-day-three-session-two-outro",
-            #         ],
-            #     },
+            # "1": {
+            #     "gid": "81336119",
+            #     "intents": [
+            #         "topic-day-three-session-one-intro",
+            #         "topic-day-three-food",
+            #         "topic-day-three-session-one-transition",
+            #         "topic-birthday",
+            #         "topic-day-three-session-one-outro",
+            #     ],
+            # },
+            # "2": {
+            #     "gid": "1627598687",
+            #     "intents": [
+            #         "topic-day-three-session-two-intro",
+            #         "topic-sports",
+            #         "topic-day-three-session-two-transition",
+            #         "topic-day-three-hobbies",
+            #         "topic-day-three-session-two-outro",
+            #     ],
+            # },
             # },
             # "4": {
             #     "1": {
@@ -354,7 +356,8 @@ if __name__ == "__main__":
         "credential": f"{agent_dir}/haru-test.json",
         "icons_path": f"{base_dir}/icons",
         "render_path": f"{base_dir}/renders/ES-Demo",
-        "parse_filepath": f"{data_dir}/ES-Demo/en/ES_GS_D2S1.xlsx",
+        # "parse_filepath": f"{data_dir}/ES-Demo/en/ES_GS.xlsx",
+        "parse_filepath": f"{data_dir}/ES-Demo/es/ES_GS_es.xlsx",
         # "parse_filepath": f"{data_dir}/ES-Demo/es/ES_GS_es.xlsx",
         "style_data": es_dev_style_data,  # es_style_data,
         "sheet_data": sheet_data,

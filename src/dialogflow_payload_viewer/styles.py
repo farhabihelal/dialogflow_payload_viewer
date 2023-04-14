@@ -507,3 +507,55 @@ es_dev_style_data = {
     #     },
     # },
 }
+
+
+issue_style_data = {
+    "edge": {
+        "direct": {
+            "color": "black",
+            "arrowsize": "2.0",
+            "penwidth": "3.0",
+            "style": "",
+        },
+        "indirect": {
+            "color": "firebrick2",
+            "arrowsize": "2.0",
+            "penwidth": "3.0",
+            "style": "",
+        },
+    },
+    "default": {
+        "intent-name": {
+            "color": "palegreen3",
+            "font-size": "20",
+            "font": "Calibri",
+        },
+        "action": {
+            "color": "darkseagreen4",
+            "font-size": "20",
+            "font": "Calibri",
+        },
+        "messages": {
+            "color": "burlywood1",
+            "font-size": "20",
+            "font": "Calibri",
+        },
+    },
+    "issue": {
+        "intent-name": {
+            "color": "orangered1",
+            "font-size": "20",
+            "font": "Calibri",
+        },
+        "action": {
+            "color": "darkseagreen4",
+            "font-size": "20",
+            "font": "Calibri",
+        },
+        "messages": {
+            "color": "burlywood1",
+            "font-size": "20",
+            "font": "Calibri",
+        },
+    },
+}
