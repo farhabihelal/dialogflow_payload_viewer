@@ -92,7 +92,7 @@ class BaseVisualizer:
                 view=False,
                 # format="pdf",
                 # renderer="cairo",
-                engine="neato",
+                # engine="neato",
                 # formatter="cairo",
                 outfile=os.path.join(
                     self.get_render_path(intent.display_name),

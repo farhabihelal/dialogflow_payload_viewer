@@ -67,16 +67,16 @@ def get_node_def_advanced(node: Intent, **kwargs):
     # local_transformer_classifier = custom_payload.get("node_type", "")
 
     style_data = (
-        kwargs["style_data"]["fallback"]
-        if node_type == "FallbackNode"
+        kwargs["style_data"]["disabled"]
+        if node_type == "DisabledNode" or node.priority < 0
+        else kwargs["style_data"]["fallback"]
+        if node_type == "FallbackNode" or node.is_fallback
         else kwargs["style_data"]["question"]
         if node_type == "QuestionNode"
         else kwargs["style_data"]["answer"]
         if node_type == "AnswerNode"
         else kwargs["style_data"]["answer-question"]
         if node_type == "AnswerQuestionNode"
-        else kwargs["style_data"]["disabled"]
-        if node_type == "DisabledNode"
         # else kwargs["style_data"]["repeat"]
         # if node_type == "RepeatNode"
         else kwargs["style_data"]["default"]

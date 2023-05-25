@@ -45,9 +45,10 @@ if __name__ == "__main__":
     data_dir = os.path.join(base_dir, "data")
 
     config = {
-        "credential": f"{agent_dir}/haru-chat-games.json",
-        "icons_path": f"{base_dir}/icons",
-        "render_path": f"{base_dir}/renders/haru-games-dev",
+        # "credential": os.path.join(agent_dir, "haru-magic.json"),
+        "credential": os.path.join(agent_dir, "haru-chat-games.json"),
+        "icons_path": os.path.join(base_dir, "icons"),
+        "render_path": os.path.join(base_dir, "renders", "haru-games-dev"),
         "style_data": style_data,
     }
 
@@ -70,6 +71,8 @@ if __name__ == "__main__":
             "would-you-rather-protocol",
             "haru-reactions",
             "topic-intro",
+            # "topic-control-intro",
+            # "topic-magic-principles-intro",
         ],
         # blacklisted_intent_names=["knew-baseball-fact-no"],
     )
