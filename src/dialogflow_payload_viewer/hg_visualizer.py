@@ -26,7 +26,7 @@ class HaruGamesVisualizer(BaseVisualizer):
 
     def load(self, language_code=None):
         return super().load(
-            language_code if language_code else self.config.get("language_code", "en")
+            language_code if language_code else self.config.get("language_code", "en-us")
         )
 
     def create_graph(self, intents: list):

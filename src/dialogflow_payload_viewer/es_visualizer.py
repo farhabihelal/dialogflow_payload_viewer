@@ -31,7 +31,7 @@ class ESVisualizer(BaseVisualizer):
 
     def load(self, language_code=None):
         super().load(
-            language_code if language_code else self.config.get("language_code", "en")
+            language_code if language_code else self.config.get("language_code", "en-us")
         )
         self._parser.load(filepath=self.config["parse_filepath"])
 
@@ -211,15 +211,15 @@ if __name__ == "__main__":
     agent_dir = os.path.join(base_dir, ".temp/keys")
     data_dir = os.path.join(base_dir, "data")
 
-    sheet_data = sheet_data["es2"]
+    sheet_data = sheet_data["generic-hospiotal-two-dkpi"]
 
     config = {
         # "credential": f"{agent_dir}/child-in-hospital.json",
-        "credential": f"{agent_dir}/es2.json",
+        "credential": f"{agent_dir}/generic-hospiotal-two-dkpi.json",
         # "credential": os.path.join(agent_dir, "es2.json"),
         # "credential": f"{agent_dir}/haru-test.json",
         "icons_path": os.path.join(base_dir, "icons"),
-        "render_path": os.path.join(base_dir, "renders", "ES-Demo"),
+        "render_path": os.path.join(base_dir, "renders", "Generic-Two-ES"),
         # "parse_filepath": os.path.join(data_dir, "ES_GS_en.xlsx"),
         "parse_filepath": os.path.join(data_dir, "ES_GS_v2.1.xlsx"),
         "style_data": es_dev_style_data,  # es_style_data,

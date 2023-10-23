@@ -23,7 +23,7 @@ class BaseVisualizer:
     def configure(self, config: dict):
         self.config = config
 
-    def load(self, language_code="en"):
+    def load(self, language_code="en-us"):
         """ """
         self._api.get_intents(language_code=language_code)
         self._api.generate_tree()
@@ -224,7 +224,7 @@ if __name__ == "__main__":
     }
 
     config = {
-        "credential": f"{agent_dir}/es.json",
+        "credential": f"{agent_dir}/tiny-tiny-habits-rvuq.json",
         "icons_path": f"{base_dir}/icons",
         "render_path": f"{base_dir}/renders",
         "style_data": style_data,
@@ -233,7 +233,7 @@ if __name__ == "__main__":
 
     viz = BaseVisualizer(config)
     viz.create(
-        intent_names=["topic-day-one-session-one-age"],
+        intent_names=["tiny-tiny-intro"],
         # blacklisted_intent_names=["knew-baseball-fact-no"],
     )
     # viz.view()

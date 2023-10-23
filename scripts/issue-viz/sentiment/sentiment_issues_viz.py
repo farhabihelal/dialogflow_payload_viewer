@@ -62,7 +62,7 @@ if __name__ == "__main__":
         "icons_path": f"{base_dir}/icons",
         "render_path": f"{base_dir}/renders/Sent-Issues",
         "style_data": issue_style_data,
-        "language_code": "en",
+        "language_code": en-us,
         "intents": [],
         "issued_intents": [],
     }

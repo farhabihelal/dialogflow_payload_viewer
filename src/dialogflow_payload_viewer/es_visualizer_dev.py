@@ -41,20 +41,20 @@ class ESVisualizerDev(ESVisualizer):
 
 if __name__ == "__main__":
     from styles import style_data
-    from es_data import sheet_data
+    from es_data import sheet_data_en
 
     base_dir = os.path.abspath(f"{os.path.dirname(__file__)}/../../")
     agent_dir = os.path.join(base_dir, ".temp/keys")
     data_dir = os.path.join(base_dir, "data")
 
-    sheet_data = sheet_data["es2"]
+    sheet_data = sheet_data_en["es2"]
 
     config = {
-        # "credential": os.path.join(agent_dir, "es.json"),
-        "credential": os.path.join(agent_dir, "es2.json"),
+        # "credential": os.path.join(agent_dir, "es.json"),_d   
+        "credential": os.path.join(agent_dir, "Canada-Run-Two.json"),
         # "credential": os.path.join(agent_dir, "haru-test.json"),
         "icons_path": os.path.join(base_dir, "icons"),
-        "render_path": os.path.join(base_dir, "renders/ES-Dev"),
+        "render_path": os.path.join(base_dir, "renders/Canada-Two-update"),
         "style_data": style_data,
         "sheet_data": sheet_data,
         "language_code": "en",
