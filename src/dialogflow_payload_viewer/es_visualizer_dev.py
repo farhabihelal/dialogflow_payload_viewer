@@ -47,14 +47,14 @@ if __name__ == "__main__":
     agent_dir = os.path.join(base_dir, ".temp/keys")
     data_dir = os.path.join(base_dir, "data")
 
-    sheet_data = sheet_data_en["es2"]
+    sheet_data = sheet_data_en["es"]
 
     config = {
-        # "credential": os.path.join(agent_dir, "es.json"),_d   
-        "credential": os.path.join(agent_dir, "Canada-Run-Two.json"),
+        "credential": os.path.join(agent_dir, "empathetic-stimulator.json"), 
+        # "credential": os.path.join(agent_dir, "Canada-Run-Two.json"),
         # "credential": os.path.join(agent_dir, "haru-test.json"),
         "icons_path": os.path.join(base_dir, "icons"),
-        "render_path": os.path.join(base_dir, "renders/Canada-Two-update"),
+        "render_path": os.path.join(base_dir, "renders/es1"),
         "style_data": style_data,
         "sheet_data": sheet_data,
         "language_code": "en",
